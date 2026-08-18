@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "word-spark-tmp",
-    "slug": "word-spark-tmp",
+    "name": "word-spark",
+    "slug": "word-spark",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,6 +20,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-sqlite"
+    ]
   }
 }
