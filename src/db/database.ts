@@ -1,6 +1,9 @@
 import * as SQLite from 'expo-sqlite';
 
-const DATABASE_NAME = 'word-spark.db';
+// Renamed from word-spark.db: the schema changed from frontend/backend
+// definitions to a single English word + Turkish translation pair, so a
+// fresh file avoids column-mismatch errors on devices with the old schema.
+const DATABASE_NAME = 'word-spark-vocab.db';
 
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
@@ -18,8 +21,7 @@ export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
     CREATE TABLE IF NOT EXISTS flashcards (
       id TEXT PRIMARY KEY NOT NULL,
       word TEXT NOT NULL,
-      frontendDef TEXT NOT NULL,
-      backendDef TEXT NOT NULL,
+      translation TEXT NOT NULL,
       interval INTEGER NOT NULL DEFAULT 0,
       repetition INTEGER NOT NULL DEFAULT 0,
       easeFactor REAL NOT NULL DEFAULT 2.5,

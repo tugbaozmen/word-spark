@@ -140,14 +140,7 @@ export default function StudyScreen() {
           ]}
         >
           <Text style={styles.wordSmall}>{currentCard.word}</Text>
-          <View style={styles.defSection}>
-            <Text style={styles.defLabel}>Frontend</Text>
-            <Text style={styles.defText}>{currentCard.frontendDef}</Text>
-          </View>
-          <View style={styles.defSection}>
-            <Text style={styles.defLabel}>Backend</Text>
-            <Text style={styles.defText}>{currentCard.backendDef}</Text>
-          </View>
+          <Text style={styles.translation}>{currentCard.translation}</Text>
         </Animated.View>
       </View>
 
@@ -210,7 +203,7 @@ const styles = StyleSheet.create({
     backfaceVisibility: 'hidden',
   },
   cardBack: {
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
   },
   word: {
     fontSize: 32,
@@ -224,6 +217,13 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#1a1a1a',
     marginBottom: 16,
+    textAlign: 'center',
+  },
+  translation: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#3d8bd6',
+    textAlign: 'center',
   },
   showAnswerButton: {
     paddingVertical: 10,
@@ -235,22 +235,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
     fontSize: 14,
-  },
-  defSection: {
-    width: '100%',
-    marginTop: 12,
-  },
-  defLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#3d8bd6',
-    textTransform: 'uppercase',
-    marginBottom: 4,
-  },
-  defText: {
-    fontSize: 15,
-    color: '#333',
-    lineHeight: 21,
   },
   gradeRow: {
     flexDirection: 'row',

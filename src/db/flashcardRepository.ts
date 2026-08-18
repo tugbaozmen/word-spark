@@ -55,13 +55,12 @@ export async function deleteFlashcard(id: string): Promise<void> {
 export async function insertFlashcard(card: NewFlashcard & { id: string }): Promise<void> {
   const db = await initDatabase();
   await db.runAsync(
-    `INSERT INTO flashcards (id, word, frontendDef, backendDef, interval, repetition, easeFactor, dueDate)
-     VALUES ($id, $word, $frontendDef, $backendDef, $interval, $repetition, $easeFactor, $dueDate);`,
+    `INSERT INTO flashcards (id, word, translation, interval, repetition, easeFactor, dueDate)
+     VALUES ($id, $word, $translation, $interval, $repetition, $easeFactor, $dueDate);`,
     {
       $id: card.id,
       $word: card.word,
-      $frontendDef: card.frontendDef,
-      $backendDef: card.backendDef,
+      $translation: card.translation,
       $interval: card.interval,
       $repetition: card.repetition,
       $easeFactor: card.easeFactor,

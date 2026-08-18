@@ -1,10 +1,9 @@
 # Word Spark 🚀
 
-Frontend ve backend geliştiricileri için, ortak terimleri her iki dünyadan da örneklerle
-pekiştiren, **tamamen offline** çalışan bir kelime ezberleme uygulaması. Expo (React Native)
-ve TypeScript ile yazılmıştır; veriler cihazda yerel bir SQLite veritabanında tutulur ve
-tekrarlar Anki'nin de temel aldığı **SM-2 (SuperMemo 2)** aralıklı tekrar algoritmasıyla
-planlanır.
+İngilizce kelime ezberlemek için **tamamen offline** çalışan bir mobil uygulama. Her kart bir
+İngilizce kelime ve Türkçe karşılığından oluşur. Expo (React Native) ve TypeScript ile
+yazılmıştır; veriler cihazda yerel bir SQLite veritabanında tutulur ve tekrarlar Anki'nin de
+temel aldığı **SM-2 (SuperMemo 2)** aralıklı tekrar algoritmasıyla planlanır.
 
 ## Özellikler
 
@@ -14,6 +13,8 @@ planlanır.
   `easeFactor` değerlerini güncelleyerek bir sonraki gösterim tarihini hesaplar.
 - 🃏 **Kart çevirme animasyonlu öğrenme ekranı** — kelimeyi gör, cevabı göster, zorluk
   derecesini seç (Zor / Orta / Kolay / Çok Kolay).
+- ➕ **Kelime ekleme formu** — İngilizce kelime ve Türkçe karşılığını gir, kaydet.
+- 📚 **Kelime listesi** — tüm kelimeler, anlık arama ve silme desteğiyle.
 - 🎉 Günün tekrarları bittiğinde tebrik ekranı ve toplam öğrenilen kelime sayısı.
 - 🌱 İlk açılışta otomatik olarak yüklenen örnek kelime seti (seed data).
 
@@ -25,8 +26,7 @@ Her kelime kartı (`Flashcard`) şu alanlardan oluşur:
 | ------------- | -------- | ----------------------------------------------------- |
 | `id`          | `string` | Benzersiz kart kimliği                                 |
 | `word`        | `string` | İngilizce kelime                                       |
-| `frontendDef` | `string` | Kelimenin frontend dünyasındaki tanımı/örneği           |
-| `backendDef`  | `string` | Kelimenin backend dünyasındaki tanımı/örneği            |
+| `translation` | `string` | Kelimenin Türkçe karşılığı                              |
 | `interval`    | `number` | Bir sonraki gösterime kadar geçecek gün sayısı          |
 | `repetition`  | `number` | Kartın kaç kez başarıyla tekrar edildiği                |
 | `easeFactor`  | `number` | Zorluk katsayısı (varsayılan `2.5`, minimum `1.3`)      |
@@ -44,17 +44,25 @@ skalasına eşleyip standart SM-2 formülünü uygular:
 - "Çok Kolay" seçimlerinde ekstra bir aralık ve kolaylık bonusu uygulanır.
 - `dueDate`, hesaplanan yeni `interval` kadar bugüne eklenerek ISO tarih olarak üretilir.
 
+## Ekranlar (Alt Menü)
+
+- **Öğren** (`StudyScreen`) — bugün tekrar sırası gelen kartları sırayla gösterir; kart
+  çevrilince Türkçe karşılık görünür ve zorluk derecesi seçilir.
+- **Yeni Ekle** (`AddWordScreen`) — İngilizce kelime + Türkçe karşılık formu.
+- **Kelimelerim** (`WordListScreen`) — tüm kelimelerin listesi, arama çubuğu ve silme.
+
 ## Proje Yapısı
 
 ```
 src/
-├── db/                  # SQLite bağlantısı, tablo oluşturma, CRUD ve seed mekanizması
-├── navigation/           # React Navigation (native-stack) kurulumu ve route tipleri
+├── db/                     # SQLite bağlantısı, tablo oluşturma, CRUD ve seed mekanizması
+├── navigation/              # React Navigation (bottom-tabs) kurulumu ve route tipleri
 ├── screens/
-│   ├── HomeScreen.tsx    # Kart listesi ve "Bugün Çalış" girişi
-│   └── StudyScreen.tsx   # SM-2 tabanlı öğrenme/tekrar ekranı
-├── types/                # Flashcard veri modeli
-└── utils/                # SM-2 algoritması ve tarih yardımcıları
+│   ├── StudyScreen.tsx      # SM-2 tabanlı öğrenme/tekrar ekranı
+│   ├── AddWordScreen.tsx    # Kelime ekleme formu
+│   └── WordListScreen.tsx   # Kelime listesi, arama ve silme
+├── types/                   # Flashcard veri modeli
+└── utils/                   # SM-2 algoritması ve tarih yardımcıları
 ```
 
 ## Kurulum
@@ -65,20 +73,22 @@ npm install
 
 ## Çalıştırma
 
+Proje Expo SDK 54 kullanır (Expo Go ile uyumlu olması için).
+
 ```bash
-npm run android   # Android emülatör/cihaz
-npm run ios        # iOS simülatör (yalnızca macOS)
-npm run web         # Tarayıcı
+npm start          # Expo Go ile QR kod okutarak açmak için
+npm run android     # Android emülatör/cihaz
+npm run ios          # iOS simülatör (yalnızca macOS)
 ```
 
 ## Kullanılan Başlıca Teknolojiler
 
-- [Expo](https://expo.dev/) (SDK 57) + TypeScript
+- [Expo](https://expo.dev/) (SDK 54) + TypeScript
 - [expo-sqlite](https://docs.expo.dev/versions/latest/sdk/sqlite/) — yerel veritabanı
-- [React Navigation](https://reactnavigation.org/) (native-stack) — ekran geçişleri
+- [React Navigation](https://reactnavigation.org/) (bottom-tabs) — alt menü navigasyonu
 
 ## Yol Haritası
 
-- [ ] Kelime ekleme/düzenleme ekranı
+- [ ] Kelime düzenleme ekranı
 - [ ] İstatistik/ilerleme ekranı
-- [ ] Kart destelerine göre filtreleme
+- [ ] Kelime listelerini/desteleri kategoriye göre filtreleme

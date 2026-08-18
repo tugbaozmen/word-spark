@@ -2,52 +2,41 @@ import { NewFlashcard } from '../types/flashcard';
 import { getFlashcardCount, insertFlashcard } from './flashcardRepository';
 import { generateId } from './id';
 import { todayIsoDate } from '../utils/date';
+import { DEFAULT_EASE_FACTOR } from '../utils/sm2';
 
 const today = todayIsoDate();
 
 const SEED_WORDS: NewFlashcard[] = [
   {
-    word: 'Hoisting',
-    frontendDef:
-      "JavaScript'in var/function tanımlarını, kod çalışmadan önce kapsamın (scope) en üstüne taşıması. Örn: bir React bileşeninde henüz tanımlanmamış bir fonksiyonu üstte çağırabilirsin.",
-    backendDef:
-      "Node.js runtime'ında da geçerlidir; bir modülün en üstünde henüz tanımlanmamış bir helper fonksiyonu çağırdığında hata almazsın çünkü fonksiyon bildirimi hoisted olur.",
+    word: 'Achieve',
+    translation: 'Başarmak, elde etmek',
     interval: 0,
     repetition: 0,
-    easeFactor: 2.5,
+    easeFactor: DEFAULT_EASE_FACTOR,
     dueDate: today,
   },
   {
-    word: 'Middleware',
-    frontendDef:
-      "Redux gibi state yönetim kütüphanelerinde, bir action dispatch edilmeden önce/sonra araya giren fonksiyon katmanı (örn: redux-thunk, redux-logger).",
-    backendDef:
-      "Express.js gibi framework'lerde, bir HTTP isteği route handler'a ulaşmadan önce çalışan fonksiyon (örn: kimlik doğrulama, loglama, body-parser).",
+    word: 'Consider',
+    translation: 'Düşünmek, göz önünde bulundurmak',
     interval: 0,
     repetition: 0,
-    easeFactor: 2.5,
+    easeFactor: DEFAULT_EASE_FACTOR,
     dueDate: today,
   },
   {
-    word: 'Cache',
-    frontendDef:
-      "Tarayıcının statik dosyaları (JS, CSS, resim) veya API yanıtlarını tekrar indirmemek için sakladığı geçici depolama (örn: Service Worker cache, localStorage).",
-    backendDef:
-      "Sunucu tarafında sık erişilen veritabanı sorgu sonuçlarını hızlı erişim için bellekte tutma (örn: Redis, Memcached) — veritabanı yükünü azaltır.",
+    word: 'Improve',
+    translation: 'Geliştirmek, iyileştirmek',
     interval: 0,
     repetition: 0,
-    easeFactor: 2.5,
+    easeFactor: DEFAULT_EASE_FACTOR,
     dueDate: today,
   },
   {
-    word: 'Endpoint',
-    frontendDef:
-      "Bir frontend uygulamasının veri çekmek/göndermek için istek attığı URL adresi (örn: fetch('/api/users') çağrısındaki '/api/users').",
-    backendDef:
-      "Backend'de tanımlanan, belirli bir HTTP metodu ve path kombinasyonuyla eşleşen route handler (örn: GET /api/users isteğini karşılayan controller fonksiyonu).",
+    word: 'Recognize',
+    translation: 'Tanımak, fark etmek',
     interval: 0,
     repetition: 0,
-    easeFactor: 2.5,
+    easeFactor: DEFAULT_EASE_FACTOR,
     dueDate: today,
   },
 ];

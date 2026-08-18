@@ -17,20 +17,18 @@ import { DEFAULT_EASE_FACTOR } from '../utils/sm2';
 
 export default function AddWordScreen() {
   const [word, setWord] = useState('');
-  const [frontendDef, setFrontendDef] = useState('');
-  const [backendDef, setBackendDef] = useState('');
+  const [translation, setTranslation] = useState('');
 
   async function handleSave() {
-    if (!word.trim() || !frontendDef.trim() || !backendDef.trim()) {
-      Alert.alert('Eksik bilgi', 'Lütfen tüm alanları doldur.');
+    if (!word.trim() || !translation.trim()) {
+      Alert.alert('Eksik bilgi', 'Lütfen her iki alanı da doldur.');
       return;
     }
 
     await insertFlashcard({
       id: generateId(),
       word: word.trim(),
-      frontendDef: frontendDef.trim(),
-      backendDef: backendDef.trim(),
+      translation: translation.trim(),
       interval: 0,
       repetition: 0,
       easeFactor: DEFAULT_EASE_FACTOR,
@@ -38,8 +36,7 @@ export default function AddWordScreen() {
     });
 
     setWord('');
-    setFrontendDef('');
-    setBackendDef('');
+    setTranslation('');
     Alert.alert('Başarılı', 'Kelime başarıyla eklendi!');
   }
 
@@ -49,30 +46,21 @@ export default function AddWordScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.label}>Kelime / Kavram</Text>
+        <Text style={styles.label}>İngilizce Kelime</Text>
         <TextInput
           style={styles.input}
-          placeholder="örn. Middleware"
+          placeholder="örn. Achieve"
           value={word}
           onChangeText={setWord}
+          autoCapitalize="none"
         />
 
-        <Text style={styles.label}>Frontend Tanımı / Örneği</Text>
+        <Text style={styles.label}>Türkçe Karşılığı</Text>
         <TextInput
-          style={[styles.input, styles.multiline]}
-          placeholder="Frontend dünyasındaki tanımı/örneği yaz"
-          value={frontendDef}
-          onChangeText={setFrontendDef}
-          multiline
-        />
-
-        <Text style={styles.label}>Backend Tanımı / Örneği</Text>
-        <TextInput
-          style={[styles.input, styles.multiline]}
-          placeholder="Backend dünyasındaki tanımı/örneği yaz"
-          value={backendDef}
-          onChangeText={setBackendDef}
-          multiline
+          style={styles.input}
+          placeholder="örn. Başarmak, elde etmek"
+          value={translation}
+          onChangeText={setTranslation}
         />
 
         <Pressable style={styles.saveButton} onPress={handleSave}>
@@ -107,10 +95,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     borderWidth: 1,
     borderColor: '#e2e2e2',
-  },
-  multiline: {
-    minHeight: 90,
-    textAlignVertical: 'top',
   },
   saveButton: {
     backgroundColor: '#1a1a1a',

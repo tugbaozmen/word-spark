@@ -1,8 +1,7 @@
 export interface Flashcard {
   id: string;
   word: string;
-  frontendDef: string;
-  backendDef: string;
+  translation: string;
   interval: number;
   repetition: number;
   easeFactor: number;

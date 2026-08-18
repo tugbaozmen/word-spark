@@ -69,13 +69,8 @@ export default function WordListScreen() {
           <View style={styles.card}>
             <View style={styles.cardContent}>
               <Text style={styles.word}>{item.word}</Text>
-              <Text style={styles.label}>Frontend</Text>
               <Text style={styles.def} numberOfLines={2}>
-                {item.frontendDef}
-              </Text>
-              <Text style={styles.label}>Backend</Text>
-              <Text style={styles.def} numberOfLines={2}>
-                {item.backendDef}
+                {item.translation}
               </Text>
             </View>
             <Pressable
@@ -142,19 +137,12 @@ const styles = StyleSheet.create({
   word: {
     fontSize: 20,
     fontWeight: '700',
-    marginBottom: 8,
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6b6b6b',
-    textTransform: 'uppercase',
-    marginTop: 6,
+    marginBottom: 4,
   },
   def: {
-    fontSize: 14,
-    color: '#333',
-    marginTop: 2,
+    fontSize: 15,
+    color: '#3d8bd6',
+    fontWeight: '600',
   },
   deleteButton: {
     alignSelf: 'flex-start',
