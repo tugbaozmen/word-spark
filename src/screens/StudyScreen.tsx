@@ -8,16 +8,23 @@ import { Flashcard } from '../types/flashcard';
 import { calculateSm2, Sm2Grade, SM2_GRADE } from '../utils/sm2';
 import { todayIsoDate } from '../utils/date';
 
-const GRADE_BUTTONS: { grade: Sm2Grade; label: string; color: string }[] = [
-  { grade: SM2_GRADE.HARD, label: 'Zor', color: '#e05d44' },
-  { grade: SM2_GRADE.GOOD, label: 'Orta', color: '#e0a83c' },
-  { grade: SM2_GRADE.EASY, label: 'Kolay', color: '#5ab55a' },
-  { grade: SM2_GRADE.VERY_EASY, label: 'Çok Kolay', color: '#3d8bd6' },
+// Two explicit rows of two buttons each — more predictable across RN/Yoga
+// versions than a single flexWrap row, which previously caused every other
+// button to be pushed out of the visible area.
+const GRADE_ROWS: { grade: Sm2Grade; label: string; color: string }[][] = [
+  [
+    { grade: SM2_GRADE.HARD, label: 'Zor', color: '#e05d44' },
+    { grade: SM2_GRADE.GOOD, label: 'Orta', color: '#e0a83c' },
+  ],
+  [
+    { grade: SM2_GRADE.EASY, label: 'Kolay', color: '#5ab55a' },
+    { grade: SM2_GRADE.VERY_EASY, label: 'Çok Kolay', color: '#3d8bd6' },
+  ],
 ];
 
-// Fixed height for the 2x2 grade grid, reserved below the card at all times
-// so revealing the answer never resizes cardArea (that was causing the card
-// to visibly jump every time the buttons appeared/disappeared).
+// Fixed height for the grade grid, reserved below the card at all times so
+// revealing the answer never resizes cardArea (that was causing the card to
+// visibly jump every time the buttons appeared/disappeared).
 const GRADE_ROW_HEIGHT = 128;
 
 export default function StudyScreen() {
@@ -152,17 +159,25 @@ export default function StudyScreen() {
       </View>
 
       <View
-        style={[styles.gradeRow, !isAnswerShown && styles.gradeRowHidden]}
+        style={[styles.gradeGrid, !isAnswerShown && styles.gradeGridHidden]}
         pointerEvents={isAnswerShown ? 'auto' : 'none'}
       >
-        {GRADE_BUTTONS.map(({ grade, label, color }) => (
-          <Pressable
-            key={grade}
-            style={[styles.gradeButton, { backgroundColor: color }]}
-            onPress={() => handleGrade(grade)}
-          >
-            <Text style={styles.gradeButtonText}>{label}</Text>
-          </Pressable>
+        {GRADE_ROWS.map((row, rowIndex) => (
+          <View key={rowIndex} style={styles.gradeRow}>
+            {row.map(({ grade, label, color }, columnIndex) => (
+              <Pressable
+                key={grade}
+                style={[
+                  styles.gradeButton,
+                  { backgroundColor: color },
+                  columnIndex === 0 && styles.gradeButtonSpacing,
+                ]}
+                onPress={() => handleGrade(grade)}
+              >
+                <Text style={styles.gradeButtonText}>{label}</Text>
+              </Pressable>
+            ))}
+          </View>
         ))}
       </View>
     </View>
@@ -244,23 +259,26 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
   },
-  gradeRow: {
+  gradeGrid: {
     height: GRADE_ROW_HEIGHT,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    alignContent: 'space-between',
     marginTop: 16,
   },
-  gradeRowHidden: {
+  gradeGridHidden: {
     opacity: 0,
   },
+  gradeRow: {
+    flexDirection: 'row',
+  },
   gradeButton: {
-    width: '48%',
+    flex: 1,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  gradeButtonSpacing: {
+    marginRight: 10,
   },
   gradeButtonText: {
     color: '#fff',
