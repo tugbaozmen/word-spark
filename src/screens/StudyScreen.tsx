@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getDueFlashcards, getLearnedFlashcardCount, updateFlashcardReview } from '../db/flashcardRepository';
 import { Flashcard } from '../types/flashcard';
@@ -14,7 +15,13 @@ const GRADE_BUTTONS: { grade: Sm2Grade; label: string; color: string }[] = [
   { grade: SM2_GRADE.VERY_EASY, label: 'Çok Kolay', color: '#3d8bd6' },
 ];
 
+// Fixed height for the 2x2 grade grid, reserved below the card at all times
+// so revealing the answer never resizes cardArea (that was causing the card
+// to visibly jump every time the buttons appeared/disappeared).
+const GRADE_ROW_HEIGHT = 128;
+
 export default function StudyScreen() {
+  const insets = useSafeAreaInsets();
   const [queue, setQueue] = useState<Flashcard[]>([]);
   const [learnedCount, setLearnedCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -112,7 +119,7 @@ export default function StudyScreen() {
   });
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: insets.bottom + 20 }]}>
       <Text style={styles.progress}>{queue.length} kart kaldı</Text>
 
       <View style={styles.cardArea}>
@@ -144,19 +151,20 @@ export default function StudyScreen() {
         </Animated.View>
       </View>
 
-      {isAnswerShown && (
-        <View style={styles.gradeRow}>
-          {GRADE_BUTTONS.map(({ grade, label, color }) => (
-            <Pressable
-              key={grade}
-              style={[styles.gradeButton, { backgroundColor: color }]}
-              onPress={() => handleGrade(grade)}
-            >
-              <Text style={styles.gradeButtonText}>{label}</Text>
-            </Pressable>
-          ))}
-        </View>
-      )}
+      <View
+        style={[styles.gradeRow, !isAnswerShown && styles.gradeRowHidden]}
+        pointerEvents={isAnswerShown ? 'auto' : 'none'}
+      >
+        {GRADE_BUTTONS.map(({ grade, label, color }) => (
+          <Pressable
+            key={grade}
+            style={[styles.gradeButton, { backgroundColor: color }]}
+            onPress={() => handleGrade(grade)}
+          >
+            <Text style={styles.gradeButtonText}>{label}</Text>
+          </Pressable>
+        ))}
+      </View>
     </View>
   );
 }
@@ -237,20 +245,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   gradeRow: {
+    height: GRADE_ROW_HEIGHT,
     flexDirection: 'row',
-    gap: 8,
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    alignContent: 'space-between',
     marginTop: 16,
   },
+  gradeRowHidden: {
+    opacity: 0,
+  },
   gradeButton: {
-    flex: 1,
-    paddingVertical: 14,
+    width: '48%',
+    paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   gradeButtonText: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 13,
+    fontSize: 14,
   },
   congratsEmoji: {
     fontSize: 56,
