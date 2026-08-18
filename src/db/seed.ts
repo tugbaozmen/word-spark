@@ -1,53 +1,28 @@
-import { NewFlashcard } from '../types/flashcard';
-import { getFlashcardCount, insertFlashcard } from './flashcardRepository';
+import { flashcardExistsByWord, insertFlashcard } from './flashcardRepository';
 import { generateId } from './id';
 import { todayIsoDate } from '../utils/date';
 import { DEFAULT_EASE_FACTOR } from '../utils/sm2';
+import { DEFAULT_WORD_LIST } from './wordList';
 
-const today = todayIsoDate();
+// Inserts each default word that isn't already in the deck (matched
+// case-insensitively), instead of only seeding on a totally empty table —
+// this lets the list grow across app updates without duplicating or
+// touching words the user already added/reviewed.
+export async function seedDefaultWords(): Promise<void> {
+  const today = todayIsoDate();
 
-const SEED_WORDS: NewFlashcard[] = [
-  {
-    word: 'Achieve',
-    translation: 'Başarmak, elde etmek',
-    interval: 0,
-    repetition: 0,
-    easeFactor: DEFAULT_EASE_FACTOR,
-    dueDate: today,
-  },
-  {
-    word: 'Consider',
-    translation: 'Düşünmek, göz önünde bulundurmak',
-    interval: 0,
-    repetition: 0,
-    easeFactor: DEFAULT_EASE_FACTOR,
-    dueDate: today,
-  },
-  {
-    word: 'Improve',
-    translation: 'Geliştirmek, iyileştirmek',
-    interval: 0,
-    repetition: 0,
-    easeFactor: DEFAULT_EASE_FACTOR,
-    dueDate: today,
-  },
-  {
-    word: 'Recognize',
-    translation: 'Tanımak, fark etmek',
-    interval: 0,
-    repetition: 0,
-    easeFactor: DEFAULT_EASE_FACTOR,
-    dueDate: today,
-  },
-];
+  for (const entry of DEFAULT_WORD_LIST) {
+    const alreadyExists = await flashcardExistsByWord(entry.word);
+    if (alreadyExists) continue;
 
-export async function seedDatabaseIfEmpty(): Promise<void> {
-  const count = await getFlashcardCount();
-  if (count > 0) {
-    return;
-  }
-
-  for (const word of SEED_WORDS) {
-    await insertFlashcard({ ...word, id: generateId() });
+    await insertFlashcard({
+      id: generateId(),
+      word: entry.word,
+      translation: entry.translation,
+      interval: 0,
+      repetition: 0,
+      easeFactor: DEFAULT_EASE_FACTOR,
+      dueDate: today,
+    });
   }
 }

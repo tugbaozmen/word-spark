@@ -4,7 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { initDatabase } from './src/db/database';
-import { seedDatabaseIfEmpty } from './src/db/seed';
+import { seedDefaultWords } from './src/db/seed';
 import RootNavigator from './src/navigation/RootNavigator';
 
 export default function App() {
@@ -13,7 +13,7 @@ export default function App() {
   useEffect(() => {
     async function prepare() {
       await initDatabase();
-      await seedDatabaseIfEmpty();
+      await seedDefaultWords();
       setIsReady(true);
     }
 

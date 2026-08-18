@@ -47,6 +47,15 @@ export async function updateFlashcardReview(id: string, result: Sm2Result): Prom
   );
 }
 
+export async function flashcardExistsByWord(word: string): Promise<boolean> {
+  const db = await initDatabase();
+  const row = await db.getFirstAsync<{ id: string }>(
+    'SELECT id FROM flashcards WHERE lower(word) = lower($word) LIMIT 1;',
+    { $word: word }
+  );
+  return row != null;
+}
+
 export async function deleteFlashcard(id: string): Promise<void> {
   const db = await initDatabase();
   await db.runAsync('DELETE FROM flashcards WHERE id = $id;', { $id: id });
