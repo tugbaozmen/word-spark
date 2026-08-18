@@ -47,6 +47,11 @@ export async function updateFlashcardReview(id: string, result: Sm2Result): Prom
   );
 }
 
+export async function deleteFlashcard(id: string): Promise<void> {
+  const db = await initDatabase();
+  await db.runAsync('DELETE FROM flashcards WHERE id = $id;', { $id: id });
+}
+
 export async function insertFlashcard(card: NewFlashcard & { id: string }): Promise<void> {
   const db = await initDatabase();
   await db.runAsync(
