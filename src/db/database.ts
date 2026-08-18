@@ -27,6 +27,10 @@ export async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
       easeFactor REAL NOT NULL DEFAULT 2.5,
       dueDate TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY NOT NULL,
+      value TEXT NOT NULL
+    );
   `);
   return db;
 }

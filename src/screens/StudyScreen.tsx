@@ -1,16 +1,27 @@
 import { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Animated,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getDueFlashcards, getLearnedFlashcardCount, updateFlashcardReview } from '../db/flashcardRepository';
+import { getDailyGoal, setDailyGoal } from '../db/settings';
 import { Flashcard } from '../types/flashcard';
 import { calculateSm2, Sm2Grade, SM2_GRADE } from '../utils/sm2';
 import { todayIsoDate } from '../utils/date';
 
-// Two explicit rows of two buttons each — more predictable across RN/Yoga
-// versions than a single flexWrap row, which previously caused every other
-// button to be pushed out of the visible area.
+// Two explicit rows of two buttons each, each with an explicit pixel width
+// (not flex/percentage) — flex-based sharing between two buttons on the
+// same row was unreliable on some Android devices (buttons partially or
+// fully failing to render on the first layout pass).
 const GRADE_ROWS: { grade: Sm2Grade; label: string; color: string }[][] = [
   [
     { grade: SM2_GRADE.HARD, label: 'Zor', color: '#e05d44' },
@@ -22,43 +33,47 @@ const GRADE_ROWS: { grade: Sm2Grade; label: string; color: string }[][] = [
   ],
 ];
 
-// Fixed height for the grade grid, reserved below the card at all times so
-// revealing the answer never resizes cardArea (that was causing the card to
-// visibly jump every time the buttons appeared/disappeared).
-const GRADE_ROW_HEIGHT = 128;
+const CONTAINER_PADDING = 20;
+const GRADE_BUTTON_GAP = 10;
+
+// Fixed height reserved below the card at all times, whether or not the
+// buttons are currently mounted, so revealing the answer never resizes
+// cardArea (that was causing the card to visibly jump on every card).
+const GRADE_SLOT_HEIGHT = 128;
 
 export default function StudyScreen() {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const gradeButtonWidth = (width - CONTAINER_PADDING * 2 - GRADE_BUTTON_GAP) / 2;
+
   const [queue, setQueue] = useState<Flashcard[]>([]);
   const [learnedCount, setLearnedCount] = useState(0);
+  const [dailyGoal, setDailyGoalState] = useState(0);
+  const [isEditingGoal, setIsEditingGoal] = useState(false);
+  const [goalInput, setGoalInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isAnswerShown, setIsAnswerShown] = useState(false);
   const flipAnim = useRef(new Animated.Value(0)).current;
 
+  const load = useCallback(async () => {
+    const [goal, due, learned] = await Promise.all([
+      getDailyGoal(),
+      getDueFlashcards(todayIsoDate()),
+      getLearnedFlashcardCount(),
+    ]);
+    setDailyGoalState(goal);
+    setGoalInput(String(goal));
+    setQueue(due.slice(0, goal));
+    setLearnedCount(learned);
+    setIsAnswerShown(false);
+    flipAnim.setValue(0);
+    setIsLoading(false);
+  }, [flipAnim]);
+
   useFocusEffect(
     useCallback(() => {
-      let isActive = true;
-
-      async function load() {
-        const [due, learned] = await Promise.all([
-          getDueFlashcards(todayIsoDate()),
-          getLearnedFlashcardCount(),
-        ]);
-        if (isActive) {
-          setQueue(due);
-          setLearnedCount(learned);
-          setIsAnswerShown(false);
-          flipAnim.setValue(0);
-          setIsLoading(false);
-        }
-      }
-
       load();
-
-      return () => {
-        isActive = false;
-      };
-    }, [flipAnim])
+    }, [load])
   );
 
   const currentCard = queue[0];
@@ -88,6 +103,40 @@ export default function StudyScreen() {
     }
   }
 
+  async function handleSaveGoal() {
+    const parsed = parseInt(goalInput, 10);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      setGoalInput(String(dailyGoal));
+      setIsEditingGoal(false);
+      return;
+    }
+    await setDailyGoal(parsed);
+    setIsEditingGoal(false);
+    await load();
+  }
+
+  const goalBar = isEditingGoal ? (
+    <View style={styles.goalBar}>
+      <Text style={styles.goalLabel}>Günlük hedef:</Text>
+      <TextInput
+        style={styles.goalInput}
+        value={goalInput}
+        onChangeText={setGoalInput}
+        keyboardType="number-pad"
+        autoFocus
+        onSubmitEditing={handleSaveGoal}
+      />
+      <Pressable style={styles.goalSaveButton} onPress={handleSaveGoal}>
+        <Text style={styles.goalSaveButtonText}>Kaydet</Text>
+      </Pressable>
+    </View>
+  ) : (
+    <Pressable style={styles.goalBar} onPress={() => setIsEditingGoal(true)}>
+      <Text style={styles.goalLabel}>Günlük hedef: {dailyGoal} kelime</Text>
+      <Text style={styles.goalEditHint}>Değiştir</Text>
+    </Pressable>
+  );
+
   if (isLoading) {
     return (
       <View style={styles.centered}>
@@ -99,6 +148,7 @@ export default function StudyScreen() {
   if (!currentCard) {
     return (
       <View style={styles.centered}>
+        {goalBar}
         <Text style={styles.congratsEmoji}>🚀</Text>
         <Text style={styles.congratsTitle}>Bugünkü tekrarların tamamlandı!</Text>
         <Text style={styles.congratsSubtitle}>
@@ -127,6 +177,7 @@ export default function StudyScreen() {
 
   return (
     <View style={[styles.container, { paddingBottom: insets.bottom + 20 }]}>
+      {goalBar}
       <Text style={styles.progress}>{queue.length} kart kaldı</Text>
 
       <View style={styles.cardArea}>
@@ -158,27 +209,28 @@ export default function StudyScreen() {
         </Animated.View>
       </View>
 
-      <View
-        style={[styles.gradeGrid, !isAnswerShown && styles.gradeGridHidden]}
-        pointerEvents={isAnswerShown ? 'auto' : 'none'}
-      >
-        {GRADE_ROWS.map((row, rowIndex) => (
-          <View key={rowIndex} style={styles.gradeRow}>
-            {row.map(({ grade, label, color }, columnIndex) => (
-              <Pressable
-                key={grade}
-                style={[
-                  styles.gradeButton,
-                  { backgroundColor: color },
-                  columnIndex === 0 && styles.gradeButtonSpacing,
-                ]}
-                onPress={() => handleGrade(grade)}
-              >
-                <Text style={styles.gradeButtonText}>{label}</Text>
-              </Pressable>
+      <View style={styles.gradeSlot}>
+        {isAnswerShown && (
+          <View style={styles.gradeGrid}>
+            {GRADE_ROWS.map((row, rowIndex) => (
+              <View key={rowIndex} style={styles.gradeRow}>
+                {row.map(({ grade, label, color }, columnIndex) => (
+                  <Pressable
+                    key={grade}
+                    style={[
+                      styles.gradeButton,
+                      { width: gradeButtonWidth, backgroundColor: color },
+                      columnIndex === 0 && styles.gradeButtonSpacing,
+                    ]}
+                    onPress={() => handleGrade(grade)}
+                  >
+                    <Text style={styles.gradeButtonText}>{label}</Text>
+                  </Pressable>
+                ))}
+              </View>
             ))}
           </View>
-        ))}
+        )}
       </View>
     </View>
   );
@@ -188,7 +240,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f7',
-    padding: 20,
+    padding: CONTAINER_PADDING,
   },
   centered: {
     flex: 1,
@@ -196,6 +248,48 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 32,
     backgroundColor: '#f5f5f7',
+  },
+  goalBar: {
+    alignSelf: 'stretch',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 12,
+  },
+  goalLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#444',
+  },
+  goalEditHint: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#3d8bd6',
+  },
+  goalInput: {
+    flex: 1,
+    marginHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#e2e2e2',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    fontSize: 14,
+  },
+  goalSaveButton: {
+    backgroundColor: '#1a1a1a',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  goalSaveButtonText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 13,
   },
   progress: {
     textAlign: 'center',
@@ -259,26 +353,26 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
   },
-  gradeGrid: {
-    height: GRADE_ROW_HEIGHT,
-    justifyContent: 'space-between',
+  gradeSlot: {
+    height: GRADE_SLOT_HEIGHT,
     marginTop: 16,
+    justifyContent: 'center',
   },
-  gradeGridHidden: {
-    opacity: 0,
+  gradeGrid: {
+    justifyContent: 'space-between',
+    height: '100%',
   },
   gradeRow: {
     flexDirection: 'row',
   },
   gradeButton: {
-    flex: 1,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   gradeButtonSpacing: {
-    marginRight: 10,
+    marginRight: GRADE_BUTTON_GAP,
   },
   gradeButtonText: {
     color: '#fff',

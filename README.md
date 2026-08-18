@@ -13,6 +13,8 @@ temel aldığı **SM-2 (SuperMemo 2)** aralıklı tekrar algoritmasıyla planlan
   `easeFactor` değerlerini güncelleyerek bir sonraki gösterim tarihini hesaplar.
 - 🃏 **Kart çevirme animasyonlu öğrenme ekranı** — kelimeyi gör, cevabı göster, zorluk
   derecesini seç (Zor / Orta / Kolay / Çok Kolay).
+- 🎯 **Ayarlanabilir günlük hedef** — Öğren ekranındaki "Günlük hedef" alanından, o gün
+  çalışmak istediğin kelime sayısını istediğin zaman değiştirebilirsin (varsayılan 20).
 - ➕ **Kelime ekleme formu** — İngilizce kelime ve Türkçe karşılığını gir, kaydet.
 - 📚 **Kelime listesi** — tüm kelimeler, anlık arama ve silme desteğiyle.
 - 🎉 Günün tekrarları bittiğinde tebrik ekranı ve toplam öğrenilen kelime sayısı.
